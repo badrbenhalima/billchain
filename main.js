@@ -8,17 +8,16 @@ class Transaction{
 	}
 }
 class Block{
-	constructor(timestamp, transaction, previousHash = ''){
-		
+	constructor(timestamp, transactions, previousHash = ''){
 		this.timestamp = timestamp;
-		this.transaction = transaction;
+		this.transactions = transactions;
 		this.previousHash = previousHash;
 		this.hash = this.calculateHash();
 		this.nonce = 0;
 	}
 	
 	calculateHash(){
-		return SHA256(this+previousHash + this.timestamp + JSON.stringfy(this.data) + this.nonce).toString();
+		return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
 	}
 	
 	mineBlock(difficulty){
@@ -26,6 +25,8 @@ class Block{
 			this.nonce++;
 			this.hash = this.calculateHash();
 		}
+		
+		console.log("Block mined:" + this.hash);
 	}
 }
 
@@ -34,7 +35,7 @@ class Blockchain{
 	constructor(){
 		this.chain = [this.createGenesisBlock()];
 		this.difficulty = 2;
-		this.pendingTransaction = [];
+		this.pendingTransactions = [];
 		this.miningReward = 100;
 	}
 	
@@ -42,16 +43,16 @@ class Blockchain{
 		return new Block("01/01/2017", "Genesis block", "0");	
 	}
 	
-	getLatesBlock(){
+	getLatestBlock(){
 		return this.chain[this.chain.length -1];
 	}
-	/**
+	
 	addBlock(newBlock){
 		newBlock.previousHash = this.getLatestBlock().hash;
 		newBlock.mineBlock(this.difficulty);
 		this.chain.push(newBlock);
 	}
-	*/
+	
 	minePendingTransactions(miningRewardAddress){
 		let block = new  Block(Date.now(), this.pendingTransactions);
 		block.mineBlock(this.difficulty);
@@ -73,7 +74,7 @@ class Blockchain{
 		
 		for(const block of this.chain){
 			for(const trans of block.transactions){
-				if(trans.fromAddress === adsress){
+				if(trans.fromAddress === address){
 					balance -= trans.amount;
 				}
 				
@@ -103,8 +104,24 @@ class Blockchain{
 	}
 }
 
-let savjeeCoin = new BlockChain();
-savjeeCoin.addBlock(new Block(1, "10/07/2017", {amount: 4}));
-savjeeCoin.addBlock(new Block(2, "12/07/2017", {amount: 10}));
+let savjeeCoin = new Blockchain();
+//console.log('Mining block 1...');
+//savjeeCoin.addBlock(new Block("10/07/2017", {amount: 4}));
+//console.log('Mining block 2...');
+//savjeeCoin.addBlock(new Block("12/07/2017", {amount: 10}));
 
+savjeeCoin.createTransaction(new Transaction('address1','address2' ,100));
+savjeeCoin.createTransaction(new Transaction('address2','address1' ,50));
+
+
+console.log('\n Starting the miner ...');
+savjeeCoin.minePendingTransactions('xavier-address');
+console.log('\n Balance of xavier is', savjeeCoin.getBalanceofAddress('xavier-address'));
+
+console.log('\n Starting the miner ...');
+savjeeCoin.minePendingTransactions('xavier-address');
+console.log('\n Balance of xavier is', savjeeCoin.getBalanceofAddress('xavier-address'));
+
+
+//console.log(" Is blockchain valid ?", savjeeCoin.isChainValid());
 //console.log(JSON.stringfy(savjeeCoin, null, 4));
